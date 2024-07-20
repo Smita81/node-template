@@ -8,7 +8,7 @@ const pool = mysql.createPool({
     connectionLimit: 10
 });
 
-console.log('MySQL Pool created successfully');
+console.log('MySQL Pool created successfully', process.env.DB_HOST);
 
 // Create query
 const query = async (sql, values) => {

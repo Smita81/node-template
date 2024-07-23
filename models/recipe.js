@@ -1,7 +1,7 @@
 import query from '../config/db.js';
 
 const createRecipeTable = async () => {
-    const createTableQuery = `
+    const createTableSQL = `
         CREATE TABLE IF NOT EXISTS recipes (
             id INT AUTO_INCREMENT PRIMARY KEY,
             title VARCHAR(255) NOT NULL,
@@ -13,7 +13,7 @@ const createRecipeTable = async () => {
     `;
 
     try {
-        await query(createTableQuery);
+        await query(createTableSQL);
         console.log('Recipes table created successfully');
     } catch (err) {
         console.error('Error creating recipes table:', err);

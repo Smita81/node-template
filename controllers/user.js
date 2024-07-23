@@ -27,31 +27,32 @@ const userControllers = {
         }
 
         try {
-            // Check if user exists
-            const existingUser = await query('SELECT * FROM users WHERE email = ?', [email]);
-            if (existingUser.length > 0) {
+            // Check if user already exists
+            const userExists = await query('SELECT * FROM users WHERE email = ?', [email]);
+            if (userExists.length > 0) {
                 return res.status(400).json({ error: 'User already exists' });
             }
 
             // Hash password
             const hashedPassword = await hashPassword(password);
 
-            // Save user to database
+            // Insert new user into the database
             await query('INSERT INTO users (email, password) VALUES (?, ?)', [email, hashedPassword]);
 
-            // Generate JWT token
-            const token = jwt.sign({ email }, 'your_jwt_secret', { expiresIn: '1h' });
-
-            // Send response
-            return res.status(201).json({ message: 'User registered successfully', token });
+            res.status(201).json({ message: 'User registered successfully' });
         } catch (error) {
             console.error(error);
-            return res.status(500).json({ error: 'Internal server error' });
+            res.status(500).json({ error: 'Server error' });
         }
     },
 
     login: async (req, res) => {
         const { email, password } = req.body;
+
+        // Validate email
+        if (!validateEmail(email)) {
+            return res.status(400).json({ error: 'Invalid email or password' });
+        }
 
         try {
             // Check if user exists
@@ -60,28 +61,25 @@ const userControllers = {
                 return res.status(400).json({ error: 'Invalid email or password' });
             }
 
-            // Validate password
-            const isMatch = await bcrypt.compare(password, user[0].password);
-            if (!isMatch) {
+            // Compare passwords
+            const validPassword = await bcrypt.compare(password, user[0].password);
+            if (!validPassword) {
                 return res.status(400).json({ error: 'Invalid email or password' });
             }
 
-            // Generate JWT token
-            const token = jwt.sign({ email }, 'your_jwt_secret', { expiresIn: '1h' });
+            // Generate JWT
+            const token = jwt.sign({ id: user[0].id }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
-            // Send response
-            return res.status(200).json({ message: 'Login successful', token });
+            res.status(200).json({ message: 'Login successful', token });
         } catch (error) {
             console.error(error);
-            return res.status(500).json({ error: 'Internal server error' });
+            res.status(500).json({ error: 'Server error' });
         }
     },
 
-    logout: async (req, res) => {
-        // Invalidate token logic can be implemented here, such as adding the token to a blacklist
-
-        // For now, just send a response
-        return res.status(200).json({ message: 'Logout successful' });
+    logout: (req, res) => {
+        // Invalidate the token (handled client-side by deleting the token)
+        res.status(200).json({ message: 'Logout successful' });
     },
 };
 

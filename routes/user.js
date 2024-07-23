@@ -1,11 +1,11 @@
 import express from 'express';
-import verifyToken from '../middleware/verifyToken.js';
-import userControllers from '../controllers/userControllers.js';
+import userControllers from '../controllers/user.js';
 
 const router = express.Router();
 
+// Routes
 router.post('/register', userControllers.register);
 router.post('/login', userControllers.login);
-router.post('/logout', verifyToken, userControllers.logout);
+router.post('/logout', userControllers.logout);
 
 export default router;
